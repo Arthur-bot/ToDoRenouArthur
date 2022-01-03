@@ -23,15 +23,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ImageButton
-            android:id="@+id/imageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@android:color/holo_red_light"
-            android:minHeight="48dp"
-            app:srcCompat="@drawable/ic_baseline_close_24"
-            app:tint="@color/white"
-            tools:ignore="ContentDescription,MissingConstraints,SpeakableTextPresentCheck" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/holo_red_light"
+                android:minHeight="48dp"
+                app:srcCompat="@drawable/ic_baseline_close_24"
+                app:tint="@color/white"
+                tools:ignore="ContentDescription,MissingConstraints,SpeakableTextPresentCheck" />
+
+            <ImageButton
+                android:id="@+id/modifyButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@android:color/holo_green_light"
+                android:minHeight="48dp"
+                app:srcCompat="@drawable/ic_baseline_add_24"
+                app:tint="@color/white"
+                tools:ignore="SpeakableTextPresentCheck,SpeakableTextPresentCheck" />
+        </LinearLayout>
 
     </LinearLayout>
 

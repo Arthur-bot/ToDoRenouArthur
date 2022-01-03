@@ -18,20 +18,26 @@ class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
 
     // Déclaration de la variable lambda dans l'adapter:
     var onClickDelete: (Task) -> Unit = {}
+    var onClickModify: (Task) -> Unit = {}
 
     // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var titleTextView = itemView.findViewById<TextView>(R.id.task_title)
         var descriptionTextView = itemView.findViewById<TextView>(R.id.task_description)
-        var buttonDelete = itemView.findViewById<ImageButton>(R.id.imageButton)
+        var deleteButton = itemView.findViewById<ImageButton>(R.id.deleteButton)
+        var modifyButton = itemView.findViewById<ImageButton>(R.id.modifyButton)
 
         fun bind(task: Task) {
             titleTextView.text = task.title
             descriptionTextView.text = task.description
 
-            buttonDelete.setOnClickListener {
+            deleteButton.setOnClickListener {
                 onClickDelete(task)
+            }
+
+            modifyButton.setOnClickListener{
+                onClickModify(task)
             }
         }
     }
