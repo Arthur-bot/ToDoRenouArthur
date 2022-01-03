@@ -1,39 +1,37 @@
 package com.todorenouarthur.tasklist
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.todorenouarthur.R
 import com.todorenouarthur.form.FormActivity
+import com.todorenouarthur.network.Api
+import kotlinx.coroutines.launch
 
 class TaskListFragment : Fragment()
 {
-    private var taskList = listOf(
-        Task(id = "id_1", title = "Task 1", description = "description 1"),
-        Task(id = "id_2", title = "Task 2"),
-        Task(id = "id_3", title = "Task 3")
-    )
-
     private val adapter = TaskListAdapter()
+    private val tasksRepository = TasksRepository()
+    private lateinit var userInfoTextView : TextView
 
-    val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+    private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val newTask = result.data?.getSerializableExtra("task") as? Task
 
         if (newTask != null) {
-
-            val oldTask = taskList.firstOrNull { it.id == newTask.id }
-            if (oldTask != null) taskList = taskList - oldTask
-
-            taskList += newTask
-
-            adapter.submitList(taskList)
+            lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+                tasksRepository.createOrUpdate(newTask)
+            }
         }
+            adapter.notifyDataSetChanged()
     }
 
     override fun onCreateView(
@@ -49,11 +47,15 @@ class TaskListFragment : Fragment()
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
+        userInfoTextView = view.findViewById<TextView>(R.id.UserInfoText)
+
         recyclerView.adapter = adapter
-        adapter.submitList(taskList)
         adapter.onClickDelete = { task ->
-            taskList = taskList - task
-            adapter.submitList(taskList)
+            lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+                tasksRepository.delete(task)
+            }
+
+            adapter.notifyDataSetChanged()
         }
 
         adapter.onClickModify = { task ->
@@ -68,6 +70,27 @@ class TaskListFragment : Fragment()
             formLauncher.launch(intent)
         }
 
+        lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+            tasksRepository.taskList.collect { newList ->
+                adapter.submitList(newList)
+            }
+        }
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    override fun onResume() {
+        lifecycleScope.launch {
+            // Ici on ne va pas gérer les cas d'erreur donc on force le crash avec "!!"
+            val userInfo = Api.userWebService.getInfo().body()
+            if (userInfo != null && userInfoTextView != null) {
+                userInfoTextView.text = "${userInfo.firstName} ${userInfo.lastName}"
+            }
+        }
+
+        lifecycleScope.launch {
+            tasksRepository.refresh() // on demande de rafraîchir les données sans attendre le retour directement
+        }
+
+        super.onResume()
     }
 }
