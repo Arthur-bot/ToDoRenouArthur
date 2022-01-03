@@ -27,7 +27,6 @@ class TasksRepository {
     }
 
     suspend fun createOrUpdate(task: Task) {
-        // TODO: appel réseau et récupération de la tache
         val oldTask = taskList.value.firstOrNull { it.id == task.id }
         val response = when {
             oldTask != null -> tasksWebService.update(task, task.id) // Update
