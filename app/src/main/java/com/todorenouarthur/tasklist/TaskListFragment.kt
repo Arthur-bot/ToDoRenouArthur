@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,18 +21,17 @@ import kotlinx.coroutines.launch
 class TaskListFragment : Fragment()
 {
     private val adapter = TaskListAdapter()
-    private val tasksRepository = TasksRepository()
+    private val taskListViewModel: TaskListViewModel by viewModels()
     private lateinit var userInfoTextView : TextView
 
     private val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val newTask = result.data?.getSerializableExtra("task") as? Task
 
         if (newTask != null) {
-            lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
-                tasksRepository.createOrUpdate(newTask)
-            }
-        }
+            taskListViewModel.addOrEdit(newTask)
+
             adapter.notifyDataSetChanged()
+        }
     }
 
     override fun onCreateView(
@@ -51,10 +51,7 @@ class TaskListFragment : Fragment()
 
         recyclerView.adapter = adapter
         adapter.onClickDelete = { task ->
-            lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
-                tasksRepository.delete(task)
-            }
-
+            taskListViewModel.delete(task)
             adapter.notifyDataSetChanged()
         }
 
@@ -71,7 +68,7 @@ class TaskListFragment : Fragment()
         }
 
         lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
-            tasksRepository.taskList.collect { newList ->
+            taskListViewModel.taskList.collect { newList ->
                 adapter.submitList(newList)
             }
         }
@@ -80,16 +77,13 @@ class TaskListFragment : Fragment()
 
     override fun onResume() {
         lifecycleScope.launch {
-            // Ici on ne va pas gérer les cas d'erreur donc on force le crash avec "!!"
             val userInfo = Api.userWebService.getInfo().body()
             if (userInfo != null && userInfoTextView != null) {
                 userInfoTextView.text = "${userInfo.firstName} ${userInfo.lastName}"
             }
         }
 
-        lifecycleScope.launch {
-            tasksRepository.refresh() // on demande de rafraîchir les données sans attendre le retour directement
-        }
+        taskListViewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
 
         super.onResume()
     }

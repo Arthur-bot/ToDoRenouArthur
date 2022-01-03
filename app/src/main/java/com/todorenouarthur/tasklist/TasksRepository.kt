@@ -15,31 +15,31 @@ class TasksRepository {
     // On pourra seulement l'observer (s'y abonner) depuis d'autres classes
     public val taskList: StateFlow<List<Task>> = _taskList.asStateFlow()
 
-    suspend fun refresh() {
+    suspend fun refresh(): List<Task>? {
         // Call HTTP (opération longue):
         val tasksResponse = tasksWebService.getTasks()
         // À la ligne suivante, on a reçu la réponse de l'API:
         if (tasksResponse.isSuccessful) {
             val fetchedTasks = tasksResponse.body()
-            // on modifie la valeur encapsulée, ce qui va notifier ses Observers et donc déclencher leur callback
             if (fetchedTasks != null) _taskList.value = fetchedTasks
+            return tasksResponse.body()
         }
+        return null
     }
 
-    suspend fun createOrUpdate(task: Task) {
+    suspend fun createOrUpdate(task: Task): Task? {
         val oldTask = taskList.value.firstOrNull { it.id == task.id }
         val response = when {
             oldTask != null -> tasksWebService.update(task, task.id) // Update
             else -> tasksWebService.create(task) // Create
         }
         if (response.isSuccessful) {
-            val updatedTask = response.body()!!
-            if (oldTask != null) _taskList.value = taskList.value - oldTask
-            _taskList.value = taskList.value + updatedTask
+            return response.body()!!
         }
+        return null
     }
 
-    suspend fun delete(task: Task): Boolean {
+    suspend fun deleteTask(task: Task): Boolean {
         val response = tasksWebService.delete(task.id);
         if(response.isSuccessful) {
             return true;
