@@ -17,7 +17,7 @@ class FormActivity : AppCompatActivity() {
         val description = this.findViewById<EditText>(R.id.editTextDescription)
         val newTask = Task(id = UUID.randomUUID().toString(), title = "New Task !")
 
-        val task = intent.data?.getSerializableExtra("task") as? Task
+        val task = intent.getSerializableExtra("task") as? Task
         if (task != null) {
             title.setText(task.title)
             description.setText(task.description)
@@ -28,6 +28,8 @@ class FormActivity : AppCompatActivity() {
 
         val validate =  this.findViewById<FloatingActionButton>(R.id.floatingActionButton)
         validate.setOnClickListener {
+            newTask.title = title.text.toString()
+            newTask.description = description.text.toString()
             intent.putExtra("task", newTask)
             setResult(RESULT_OK, intent)
             finish()

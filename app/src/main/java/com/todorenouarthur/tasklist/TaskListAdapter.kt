@@ -9,12 +9,17 @@ import com.todorenouarthur.R
 import android.view.LayoutInflater
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+
+object  TaskDiffCallBack : DiffUtil.ItemCallback<Task>() {
+    override fun areItemsTheSame(oldItem: Task, newItem: Task) = oldItem.id == newItem.id
+
+    override fun areContentsTheSame(oldItem: Task, newItem: Task) = oldItem == newItem
+}
 
 
-class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
-
-    lateinit var currentList: List<Task>
+class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(TaskDiffCallBack) {
 
     // Déclaration de la variable lambda dans l'adapter:
     var onClickDelete: (Task) -> Unit = {}
@@ -42,10 +47,6 @@ class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
         }
     }
 
-    override fun getItemCount(): Int {
-        return this.currentList.count()
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val itemView = LayoutInflater.from(parent.context)
         val view: View = itemView.inflate(
@@ -58,6 +59,6 @@ class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(currentList[position])
+        holder.bind(getItem(position))
     }
 }

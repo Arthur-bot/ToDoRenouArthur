@@ -20,6 +20,8 @@ class TaskListFragment : Fragment()
         Task(id = "id_3", title = "Task 3")
     )
 
+    private val adapter = TaskListAdapter()
+
     val formLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val newTask = result.data?.getSerializableExtra("task") as? Task
 
@@ -29,6 +31,8 @@ class TaskListFragment : Fragment()
             if (oldTask != null) taskList = taskList - oldTask
 
             taskList += newTask
+
+            adapter.submitList(taskList)
         }
     }
 
@@ -45,12 +49,11 @@ class TaskListFragment : Fragment()
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        val adapter = TaskListAdapter()
-        adapter.currentList = taskList
         recyclerView.adapter = adapter
+        adapter.submitList(taskList)
         adapter.onClickDelete = { task ->
             taskList = taskList - task
-            adapter!!.notifyDataSetChanged()
+            adapter.submitList(taskList)
         }
 
         adapter.onClickModify = { task ->
