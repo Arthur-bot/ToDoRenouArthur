@@ -45,7 +45,6 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:hint="@string/password"
-                android:hintTextColor="#757575"
                 android:inputType="textPassword"
                 android:minHeight="48dp"
                 tools:ignore="TextContrastCheck"
