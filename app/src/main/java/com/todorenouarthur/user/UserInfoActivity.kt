@@ -4,18 +4,13 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
-import androidx.activity.viewModels
-import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.google.android.material.snackbar.Snackbar
@@ -24,8 +19,10 @@ import com.google.modernstorage.mediastore.MediaStoreRepository
 import com.google.modernstorage.mediastore.SharedPrimary
 import com.todorenouarthur.R
 import com.todorenouarthur.network.Api
+import com.todorenouarthur.network.UserInfoViewModel
 import kotlinx.coroutines.launch
-import java.io.File
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.*
 
 class  UserInfoActivity : AppCompatActivity() {
@@ -36,6 +33,7 @@ class  UserInfoActivity : AppCompatActivity() {
         if(it != null) {
         handleImage(it)
     }}
+    private val viewModel = UserInfoViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -99,7 +97,7 @@ class  UserInfoActivity : AppCompatActivity() {
     }
 
     private fun handleImage(imageUri: Uri) {
-        this.findViewById<ImageView>(R.id.image_view).load(imageUri)
+        viewModel.updateAvatar(convert(imageUri))
     }
 
     // register
@@ -118,5 +116,13 @@ class  UserInfoActivity : AppCompatActivity() {
             ).getOrThrow()
             cameraLauncher.launch(photoUri)
         }
+    }
+
+    private fun convert(uri: Uri): MultipartBody.Part {
+        return MultipartBody.Part.createFormData(
+            name = "avatar",
+            filename = "temp.jpeg",
+            body = contentResolver.openInputStream(uri)!!.readBytes().toRequestBody()
+        )
     }
 }
